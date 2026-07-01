@@ -2,6 +2,17 @@
 
 Author, review, explain, and convert DBML schemas using the official DBML specification.
 
+## What is DBML?
+
+**DBML** (Database Markup Language) is an open-source domain-specific language for defining database schemas as code — tables, columns, relationships, indexes, enums, and project metadata. It is database-agnostic and ships with a parser (`@dbml/parse`), a CLI (`@dbml/cli`), and live database connectors (`@dbml/connector`); `@dbml/core` is the umbrella package.
+
+- **Creator / maintainer:** Holistics — [github.com/holistics/dbml](https://github.com/holistics/dbml)
+- **Spec & docs:** [dbml.dbdiagram.io/docs](https://dbml.dbdiagram.io/docs)
+- **npm packages:** `@dbml/core`, `@dbml/cli`, `@dbml/connector`, `@dbml/parse`
+- **Companion tools:** [dbdiagram.io](https://dbdiagram.io) (draw ERDs from DBML) · [dbdocs.io](https://dbdocs.io) (publish DBML as live docs)
+
+> DBML is the **language**; dbdiagram.io and dbdocs.io are the **renderers**. This skill authors, reviews, and converts DBML — it does not draw ERDs or export images.
+
 ## Installation
 
 ```bash
