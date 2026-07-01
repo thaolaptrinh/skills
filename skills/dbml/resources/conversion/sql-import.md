@@ -2,39 +2,43 @@
 
 Get SQL *into* DBML. **Two completely separate import paths — never conflate them.** For the lossy/round-trip picture see `fidelity.md`; for the export direction see `sql-export.md`. Tooling boundaries live in `capabilities.md`.
 
+> **Prerequisites:** the CLI bins `sql2dbml` / `db2dbml` come from **`@dbml/cli`** — install once with `npm install -g @dbml/cli` (Node.js ≥ 18; same package also provides `dbml2sql`, see `sql-export.md`). **If a bin is missing, ask the user to install it before running — never assume availability.**
+
 ---
 
-## Path 1: DDL-file import — `@dbml/core` `importer.import(sql, format)`
+## Path 1: DDL/file import — `sql2dbml`
 
-Parses a `.sql` text blob via **ANTLR grammars**. **5 dialects only.**
+Parses a `.sql` text blob via **ANTLR grammars**. Match the source dialect:
 
-| `format` | Dialect |
-|---|---|
-| `'postgres'` | PostgreSQL |
-| `'mysql'` | MySQL |
-| `'mssql'` | SQL Server |
-| `'snowflake'` | Snowflake |
-| `'oracle'` | Oracle |
-| `'dbml'` | (DBML→DBML via **deprecated** PEG parser — prefer `'dbmlv2'`; → `fidelity.md`) |
-
-```js
-const { importer } = require('@dbml/core');
-const dbml = importer.import(sqlString, 'postgres');   // → DBML text
-// options: { includeRecords: true }  (default true → INSERT rows become Records)
+```bash
+sql2dbml dump.sql --postgres            # PostgreSQL
+sql2dbml dump.sql --mysql               # MySQL
+sql2dbml dump.sql --mssql               # SQL Server
+sql2dbml dump.sql --snowflake           # Snowflake (DDL import IS supported — unlike export)
+sql2dbml dump.sql --oracle              # Oracle
+sql2dbml dump.sql --postgres -o out.dbml   # write to file  (--out-file / -o)
+# legacy parsers (quicker, less accurate): --postgres-legacy / --mysql-legacy / --mssql-legacy
 ```
-CLI: `sql2dbml file.sql --postgres -o out.dbml`
 
-## Path 2: Live-DB import — `@dbml/connector`
+## Path 2: Live-DB import — `db2dbml`
 
 Connects to a **running database** via native drivers and introspects `INFORMATION_SCHEMA`. **6 dialects, including BigQuery.**
 
-```js
-const { connector } = require('@dbml/connector');
-const { importer } = require('@dbml/core');
-const schemaJson = await connector.fetchSchemaJson(connStr, 'postgres'); // or mysql/mssql/snowflake/bigquery/oracle
-const dbml = importer.generateDbml(schemaJson);
+```bash
+db2dbml <dialect> "<connection-string>" -o out.dbml
+# dialects: postgres | mysql | mssql | snowflake | bigquery | oracle
 ```
-CLI: `db2dbml postgres "postgresql://..." -o out.dbml`
+
+Connection string per dialect (drivers e.g. `oracledb`/`mysql2`/`pg` must be installed separately):
+
+| Dialect | Connection string |
+|---|---|
+| postgres | `'postgresql://user:password@localhost:5432/dbname?schemas=schema1,schema2'` |
+| mysql | `'mysql://user:password@localhost:3306/dbname'` |
+| mssql | `'Server=localhost,1433;Database=master;User Id=sa;Password=...;Encrypt=true;TrustServerCertificate=true;Schemas=schema1,schema2;'` |
+| snowflake | `'SERVER=<account>.<region>;UID=<user>;PWD=<pass>;DATABASE=<db>;WAREHOUSE=<wh>;ROLE=<role>;SCHEMAS=schema1,schema2;'` |
+| bigquery | `/path/to/credential.json` (ADC `{}` for env auth, or service-account JSON with `project_id`/`client_email`/`private_key`/`datasets`) |
+| oracle | `'username/password@[//]host[:port][/service_name]'` |
 
 ## ❗ BigQuery is connector-only
 There is **no DDL-file import** for BigQuery (no grammar; `ImportFormat` has no `bigquery`). The repo's `ddl_samples/bigquery.sql` is an orphan red herring. To get BigQuery into DBML you must connect live. BigQuery connector returns **no FKs, no checks, no increment** (BigQuery doesn't support them natively).
@@ -94,7 +98,7 @@ A bogus type (`Intdsfsd`) passes through verbatim. Good for fidelity, bad if you
 ---
 
 ## After-import audit
-- Match the dialect flag (`--postgres`/`--mysql`/`--mssql`/`--snowflake`/`--oracle`). Wrong dialect = wrong/missing output.
+- Match the dialect flag (`--postgres`/`--mysql`/`--mssql`/`--snowflake`/`--oracle`, plus `--postgres-legacy`/`--mysql-legacy`/`--mssql-legacy` for the quicker/less-accurate old parsers). Wrong dialect = wrong/missing output.
 - **BigQuery:** use the live connector (`db2dbml bigquery "<conn>"`).
 - Count tables/enums vs source; re-add views/functions/triggers as notes (silently dropped).
 - Check generated-column expressions and MySQL `UNSIGNED` — both lost.

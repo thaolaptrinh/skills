@@ -38,6 +38,12 @@ Load only what you need. **Full routing is in `resources/decision-guide.md`**; t
 3. Label every construct's status; state boundaries honestly.
 4. Verify with a parse when correctness matters (`new Parser().parse(src, 'dbmlv2')`).
 
+## Tooling prerequisites
+
+Conversions run through the **`@dbml/cli`** CLI (Node.js ≥ 18): `npm install -g @dbml/cli` → bins `dbml2sql`, `sql2dbml`, `db2dbml`. **If a bin is missing, stop and ask the user to install it first** — never assume it is available or invent workarounds. Full commands + dialect flags: `resources/conversion/sql-export.md` and `sql-import.md`.
+
+**Conversions are CLI-only:** when the user asks to convert/export/import, run `dbml2sql` / `sql2dbml` / `db2dbml`. **Do not write `.js` scripts or call the `@dbml/core` API for conversions** — the CLI is the path. (`@dbml/core` is used only for parse-validation — rule 4 — and DBML→DBML round-trip — `fidelity.md`.)
+
 ## Quality rules (apply to every answer)
 
 1. **Never invent syntax.** Only `- < > <>` are relationship operators; index method is `type:` (no `using:`); expression default is `[default: \`expr\`]` (no `default_expr`); modules use `use`/`reuse` (no `import`/`namespace`); `TablePartial` injection is `~name` (not `use name`); schemas are single-level.

@@ -1,19 +1,42 @@
 # DBML → SQL Export
 
-Get DBML *out to* SQL. Export targets = **`{ dbml, mysql, postgres, json, mssql, oracle }`** — **there is NO Snowflake exporter** (`'snowflake'` silently returns `""`). For the import direction see `sql-import.md`; for round-trip/loss see `fidelity.md`.
+Get DBML *out to* SQL via the `dbml2sql` CLI. SQL dialects: **PostgreSQL (default), MySQL, MSSQL, Oracle** — **there is no Snowflake exporter**. (DBML→DBML round-trip and JSON export are API-only — see `fidelity.md`.) For the import direction see `sql-import.md`; for round-trip/loss see `fidelity.md`.
 
 ---
 
-## API & CLI
-```js
-const { exporter, ModelExporter, Parser } = require('@dbml/core');
-exporter.export(dbmlString, 'postgres')                 // string → string
-ModelExporter.export(databaseModel, 'mysql')            // model → string
-// To get a model from DBML (e.g. to validate before exporting):
-const db = new Parser().parse(dbmlString, 'dbmlv2');    // → Database (throws on error)
-// options: { includeRecords: true }  (default true; Records → INSERT)
+## Prerequisites & Installation
+
+The conversion CLI ships in the **`@dbml/cli`** package (requires **Node.js ≥ 18**).
+
+```bash
+npm install -g @dbml/cli      # or: yarn global add @dbml/cli  /  pnpm add -g @dbml/cli
 ```
-CLI: `dbml2sql file.dbml --postgres -o out.sql` (default dialect = **postgres**; flags: `--mysql --postgres --mssql --oracle`; no Snowflake). Multifile DBML: pass the **entry** file; `use`/`reuse` resolve automatically.
+
+This installs three global bins: **`dbml2sql`**, `sql2dbml`, `db2dbml`. **If a bin is missing when you try to run, stop and ask the user to install `@dbml/cli` first** — never assume it is available, and never invent alternative commands.
+
+One-off without a global install (same bins, scoped invocation):
+
+```bash
+npx -p @dbml/cli dbml2sql schema.dbml --mysql -o out.sql
+```
+
+> ⚠️ `npx @dbml/cli …` does **not** work — the package name differs from the bin name. Always use `npx -p @dbml/cli <bin>`.
+
+## Convert DBML → SQL
+
+```bash
+dbml2sql schema.dbml                 # default dialect = PostgreSQL
+dbml2sql schema.dbml --mysql         # MySQL
+dbml2sql schema.dbml --mssql         # SQL Server
+dbml2sql schema.dbml --oracle        # Oracle
+dbml2sql schema.dbml -o schema.sql   # write to file  (--out-file / -o)
+```
+
+Dialect flags: `--postgres` (default) · `--mysql` · `--mssql` · `--oracle`. **There is no `--snowflake`** (no exporter exists). Multi-file DBML: pass the **entry** file; `use`/`reuse` resolve automatically.
+
+---
+
+## Behavior, gotchas & limits
 
 ### ⚠️ Exit code gotcha (critical)
 **`dbml2sql` always exits 0, even on hard parse errors.** Errors print to stdout as `ERROR: <file>(line,col): <msg>` and are written to `./dbml-error.log`. **Do not gate CI/scripts on the exit code** — parse the output or check the log.
@@ -71,10 +94,10 @@ DBML enrichment with **no SQL equivalent** is dropped on SQL export (kept on DBM
 `Ref: a.id <> b.id` → a generated `a_b` junction table with two FKs (all dialects). Oracle also emits `GRANT REFERENCES … TO PUBLIC` for cross-schema refs.
 
 ## Records surprise
-By default `Records` become real `INSERT` statements wrapped in deferral scaffolding (Postgres `BEGIN; SET CONSTRAINTS ALL DEFERRED; … COMMIT;`; MySQL `SET FOREIGN_KEY_CHECKS=0/1`; MSSQL `NOCHECK CONSTRAINT ALL`/`WITH CHECK CHECK`; Oracle `SET CONSTRAINTS ALL DEFERRED` + `INSERT ALL … SELECT FROM dual`). For pure DDL, pass `includeRecords: false`.
+By default `Records` become real `INSERT` statements wrapped in deferral scaffolding (Postgres `BEGIN; SET CONSTRAINTS ALL DEFERRED; … COMMIT;`; MySQL `SET FOREIGN_KEY_CHECKS=0/1`; MSSQL `NOCHECK CONSTRAINT ALL`/`WITH CHECK CHECK`; Oracle `SET CONSTRAINTS ALL DEFERRED` + `INSERT ALL … SELECT FROM dual`). The CLI has **no flag to suppress this** — a CLI export always emits Records as INSERTs. (Removing `Records` blocks from the `.dbml` first is the CLI way to get pure DDL.)
 
 ## Decisions before exporting
 - Dialects: `--mysql --postgres --mssql --oracle`. **No Snowflake.**
-- Decide on Records: default → `INSERT` (with deferral scaffolding); suppress for pure DDL.
+- Records: a CLI export always includes them as `INSERT` (with deferral scaffolding). Want pure DDL? Strip `Records` from the source `.dbml` first.
 - **Don't gate on exit code** — check `dbml-error.log`.
 - Review losses: the enrichment-loss list applies (Project/TableGroup/sticky-notes/aliases/colors/enum-value notes gone).
