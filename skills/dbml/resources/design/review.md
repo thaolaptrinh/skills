@@ -44,7 +44,7 @@ An actionable audit. Each item points to the resource that explains the cause/fi
 - [ ] Large schemas split via `use`/`reuse` with a clear entry file. (`naming.md`, `syntax/advanced.md`)
 
 ## Conversion readiness (if exporting)
-- [ ] Types are target-dialect-correct (no validation is done for you). (`conversion/sql-export.md`)
+- [ ] Types are target-dialect-correct — no MySQL-isms on Postgres (`longtext`/`mediumtext`→`text`, `tinyint`→`smallint`, no `unsigned`). No validation is done for you. (`design/best-practices.md`, `conversion/sql-export.md`)
 - [ ] You've decided on `includeRecords` (Records → `INSERT` by default). (`conversion/sql-export.md`)
 - [ ] Not relying on Snowflake export (unsupported) or BigQuery DDL import. (`conversion/sql-import.md`)
 - [ ] CI does **not** gate on `dbml2sql` exit code (always 0). (`conversion/sql-export.md`)

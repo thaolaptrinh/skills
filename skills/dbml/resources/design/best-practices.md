@@ -27,6 +27,25 @@ How to keep a DBML schema clean as it grows. Cross-cutting principles; for namin
 - **Consistent operator direction** for the common FK case (`child.parent_id > parent.id`).
 - **Match the host project's indentation.** DBML is whitespace-insensitive; follow the project's EditorConfig / Prettier / formatter config, else default to 2 spaces (DBML convention). The skill's own skeletons/examples use 2 spaces.
 
+## Type selection (when authoring for a target SQL dialect)
+
+DBML emits types **verbatim** — it does no dialect mapping on export (→ `conversion/sql-export.md` → "Type fidelity"). So when the `.dbml` will be exported to a specific dialect, write the **dialect-native** type the column actually becomes, not a framework abstraction or a foreign dialect's name. The export auto-fixes only a few things (MySQL `varchar`→`varchar(255)`, MSSQL `varchar`→`nvarchar(255)`, Postgres uppercasing `[increment]` column types); **everything else is your responsibility**.
+
+### Common cross-dialect pitfalls (MySQL-ism → what to write instead)
+
+The names on the left are **valid in MySQL only** and produce invalid DDL on Postgres. They commonly leak in when translating from framework abstractions — e.g. Laravel's `longText()` / `mediumText()` / `tinyInteger()` all collapse to simpler types on Postgres, so carrying the MySQL name into `.dbml` is wrong:
+
+| Don't write (MySQL) | Write instead (Postgres) | Reason |
+|---|---|---|
+| `longtext` · `mediumtext` · `tinytext` | `text` | Postgres has a single variable-length text type |
+| `tinyint` · `tinyint unsigned` | `smallint` | No 1-byte int in Postgres; smallest is `smallint` |
+| `int unsigned` · `bigint unsigned` | `bigint` / `integer` (+ optional `CHECK (x >= 0)`) | Postgres has no `unsigned` |
+| `double` | `double precision` | Postgres name for the 8-byte float |
+| `blob` · `longblob` | `bytea` | Postgres binary type |
+| `datetime` | `timestamp` | Postgres has no `datetime` |
+
+MSSQL and Oracle have their own deviations (MSSQL prefers `nvarchar(max)` for large text and `bit` for booleans; Oracle has no native `boolean` and uses `NUMBER(1)`). When unsure, check the target dialect's type list before authoring — DBML will not validate it for you.
+
 ---
 
 ## Documentation practices

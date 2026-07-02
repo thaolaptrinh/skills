@@ -139,6 +139,10 @@ DiagramView sales {
 
 DBML is **whitespace-insensitive** — indent to match the host project. Read existing `.dbml` files or the project's EditorConfig / Prettier / formatter config, and follow that. Default to **2 spaces** (the DBML community convention) when the project has no preference. The skeletons and examples in this skill use **2 spaces**. Within each table, align the column name, type, and `[settings]` columns for readability.
 
+## Type names — use the target dialect's native type
+
+DBML emits types **verbatim** (no dialect mapping). When the `.dbml` targets a specific SQL dialect, write that dialect's native type — `text`, not `longtext`, on Postgres — because DBML will neither map nor validate it for you. See `design/best-practices.md` → "Type selection" for the common MySQL→Postgres pitfalls.
+
 ---
 
 ## Settings by context
