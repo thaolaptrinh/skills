@@ -16,6 +16,8 @@ Expert reference for the **DBML** language and its ecosystem. Grounded in the `h
 
 Activate for any DBML task: **author** / **explain** / **review** / **fix** / **convert (SQL ↔ DBML)** / **diagnose parser errors** / **improve schema design**. Do not activate for rendering-only tasks (ERD drawing, image/PDF export) — those are dbdiagram.io/dbdocs.io, not DBML.
 
+**Also re-invoke whenever the project's database schema changes** — new or edited migrations/schema files, added/renamed/dropped tables, columns, relationships, indexes, or enums — so the project's `.dbml` (when one exists) stays in sync. This trigger is **framework-agnostic**: any stack that carries a schema layer (Laravel/Rails/Django migrations, Prisma schema, Drizzle, raw DDL, …) counts. Treat a `.dbml` in a repo as a maintained artifact that must follow schema changes, not a one-time drawing.
+
 ## Supported tasks → route to a resource
 
 Load only what you need. **Full routing is in `resources/decision-guide.md`**; the one-line map:

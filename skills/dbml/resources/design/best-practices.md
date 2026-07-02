@@ -7,6 +7,7 @@ How to keep a DBML schema clean as it grows. Cross-cutting principles; for namin
 ## Maintainability
 
 - **Treat DBML as the source of truth; generated SQL as a derived artifact.** Keep enrichment (notes, groups, sticky notes) in `.dbml` — it won't survive a SQL detour (→ `conversion/fidelity.md`).
+- **Keep the `.dbml` in sync when a schema layer lives alongside it.** In a repo that also carries framework migrations / Prisma / Drizzle / raw DDL, any schema change (new/renamed/dropped table, column, ref, index, enum) is a trigger to update the `.dbml` too — it is a *maintained* artifact, not a frozen drawing. Prefer **hand-editing** the `.dbml` over auto-regenerating: a curated file captures *logical* relationships (polymorphic morphs, soft FKs that aren't physical constraints, business notes) that a `pg_dump` → `sql2dbml` round-trip would lose. (→ SKILL.md “Activation” for the trigger.)
 - **Split large schemas by domain** (`auth.dbml`, `billing.dbml`, `main.dbml`) and compose with `use`/`reuse`. Keep a single **entry file** (`main.dbml`) as the composition root (→ `syntax/advanced.md`).
 - **Reuse repeated column bundles** (audit columns, soft-delete columns) via `TablePartial` injected with `~name` rather than copy-pasting (→ `syntax/advanced.md`).
 - **Order tables top-down by dependency** inside a file: referenced (parent) tables before referencing (child) tables. Not required (refs resolve regardless), but it reads better and matches ERD layout intent.
