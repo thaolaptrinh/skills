@@ -26,6 +26,7 @@ An actionable audit. Each item points to the resource that explains the cause/fi
 - [ ] Consistent table naming (singular `snake_case` recommended). (`naming.md`)
 - [ ] FK columns named `<target>_id`.
 - [ ] Consistent type spelling (don't mix `int`/`integer`/`INT` — emitted verbatim). (`normalization.md`)
+- [ ] Indentation matches the host project (EditorConfig / Prettier / formatter config); default to 2 spaces when none. (`best-practices.md`)
 - [ ] Enum values one-per-line, lowercase. (`syntax/language.md`)
 
 ## Indexes

@@ -25,6 +25,7 @@ How to keep a DBML schema clean as it grows. Cross-cutting principles; for namin
 - **Consistent type spelling.** DBML does no type mapping — `int` ≠ `integer` ≠ `INT` for rendering purposes; pick one and use it everywhere.
 - **Consistent FK naming** (`<target>_id`) and a consistent PK convention (`id`).
 - **Consistent operator direction** for the common FK case (`child.parent_id > parent.id`).
+- **Match the host project's indentation.** DBML is whitespace-insensitive; follow the project's EditorConfig / Prettier / formatter config, else default to 2 spaces (DBML convention). The skill's own skeletons/examples use 2 spaces.
 
 ---
 

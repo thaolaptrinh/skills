@@ -135,6 +135,12 @@ DiagramView sales {
 
 ---
 
+## Indentation & style
+
+DBML is **whitespace-insensitive** — indent to match the host project. Read existing `.dbml` files or the project's EditorConfig / Prettier / formatter config, and follow that. Default to **2 spaces** (the DBML community convention) when the project has no preference. The skeletons and examples in this skill use **2 spaces**. Within each table, align the column name, type, and `[settings]` columns for readability.
+
+---
+
 ## Settings by context
 | Where | Valid settings |
 |---|---|

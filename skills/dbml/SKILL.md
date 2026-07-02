@@ -42,7 +42,7 @@ Load only what you need. **Full routing is in `resources/decision-guide.md`**; t
 
 Conversions run through the **`@dbml/cli`** CLI (Node.js ≥ 18): `npm install -g @dbml/cli` → bins `dbml2sql`, `sql2dbml`, `db2dbml`. **If a bin is missing, stop and ask the user to install it first** — never assume it is available or invent workarounds. Full commands + dialect flags: `resources/conversion/sql-export.md` and `sql-import.md`.
 
-**Conversions are CLI-only:** when the user asks to convert/export/import, run `dbml2sql` / `sql2dbml` / `db2dbml`. **Do not write `.js` scripts or call the `@dbml/core` API for conversions** — the CLI is the path. (`@dbml/core` is used only for parse-validation — rule 4 — and DBML→DBML round-trip — `fidelity.md`.)
+**Conversions are CLI-only:** when the user asks to convert/export/import, run `dbml2sql` / `sql2dbml` / `db2dbml`. **Do not write `.js` scripts or call the `@dbml/core` API for conversions** — the CLI is the path. (`@dbml/core` is used only for parse-validation — workflow step 4 — and DBML→DBML round-trip — `fidelity.md`.)
 
 ## Quality rules (apply to every answer)
 
@@ -50,7 +50,8 @@ Conversions run through the **`@dbml/cli`** CLI (Node.js ≥ 18): `npm install -
 2. **Never conflate.** DBML-the-language ≠ SQL-import (ANTLR) ≠ dbdiagram/dbdocs (rendering). Positions/image-export/view-runtime are Tool-only, not DBML.
 3. **Prefer `dbmlv2`.** The `'dbml'` key is a deprecated PEG parser. `dbml2sql` **always exits 0** even on error — check `dbml-error.log`.
 4. **One item per line** inside every block body (the #1 syntax error).
-5. **Always label status** with these canonical tags:
+5. **Match the host project's indentation.** DBML is whitespace-insensitive, so follow the convention of the project you are editing — read existing `.dbml` files, or the EditorConfig / Prettier / formatter config. Default to **2 spaces** (the DBML community convention) when the project has no preference. Keep column name, type, and `[settings]` visually aligned within each table.
+6. **Always label status** with these canonical tags:
    - **Official** — in the DBML spec, parsed by `@dbml/parse`, stable (annotate *enrichment* = parsed but no SQL equivalent; *newer* = recent "3.0-era" addition).
    - **Experimental** — newest/least battle-tested (currently: none — all constructs are stable; reserve this if one appears).
    - **Unsupported** — rejected by the parser / does not exist in DBML (e.g. `><`, `using:`, `default_expr`).
